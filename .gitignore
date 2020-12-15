@@ -1,0 +1,7 @@
+.idea
+.git
+iso
+build
+pros.img
+cmake-build-debug
+kmap.map

@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+Language: Cpp
+ColumnLimit: 137
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: Empty
+FixNamespaceComments: false
+NamespaceIndentation: All
+BinPackArguments: true
+BinPackParameters: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyBlock: true
+AlignAfterOpenBracket: Align
+IndentCaseLabels: true
+SpaceAfterCStyleCast: true
+PointerAlignment: Left

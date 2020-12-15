@@ -1,0 +1,1 @@
+Checks: '-modernize-deprecated-headers,-modernize-use-equals-default,-hicpp-signed-bitwise,-cppcoreguidelines-pro-type-member-init,-hicpp-multiway-paths-covered,-cert-dcl58-cpp,-cppcoreguidelines-narrowing-conversions,readability-braces-around-statements,readability-isolate-declaration'
