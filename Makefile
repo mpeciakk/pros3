@@ -59,7 +59,7 @@ iso: kernel
 	echo '  multiboot /boot/pros.bin'    	 >> iso/boot/grub/grub.cfg
 	echo '  boot'                            >> iso/boot/grub/grub.cfg
 	echo '}'                                 >> iso/boot/grub/grub.cfg
-	grub-mkrescue -v --output=$(BUILD_DIR)/pros.iso iso
+	grub-mkrescue --output=$(BUILD_DIR)/pros.iso iso
 	rm -rf iso
 
 mount:
