@@ -6,8 +6,8 @@ DISK_IMG = pros.img
 
 MOUNT_POINT = /mnt/pros
 
-QEMU = "/mnt/d/Program Files/qemu/qemu-system-i386.exe"
-QEMU_IMG = "/mnt/d/Program Files/qemu/qemu-img.exe"
+QEMU = qemu-system-i386
+QEMU_IMG = qemu-img.exe
 
 QEMU_FLAGS = -monitor stdio -m 128
 
@@ -78,7 +78,7 @@ disk:
 	mkfs.fat -F32 $(DISK_IMG)
 
 run: clean kernel umount
-	$(QEMU) $(QEMU_FLAGS) -serial stdio -drive format=raw,file=$(DISK_IMG) -kernel $(BUILD_DIR)/pros.bin
+	$(QEMU) $(QEMU_FLAGS) -drive format=raw,file=$(DISK_IMG) -kernel $(BUILD_DIR)/pros.bin
 
 runiso: clean umount iso
 	$(QEMU) $(QEMU_FLAGS) $(BUILD_DIR)/pros.iso -serial stdio -drive file=$(DISK_IMG),format=raw

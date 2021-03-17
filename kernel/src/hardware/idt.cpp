@@ -22,7 +22,7 @@ char* exceptions[] = {"Division by zero",
                       "Machine check"};
 
 InterruptManager::InterruptManager() : masterCommandPort(0x20), masterDataPort(0x21), slaveCommandPort(0xA0), slaveDataPort(0xA1) {
-    this->instance = this;
+    instance = this;
 
     u16 codeSegment = 0x08;
 

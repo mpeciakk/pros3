@@ -27,63 +27,55 @@ void memcpy(void* dest, void* src, u32 size) {
     }
 }
 
-void intToString(int n, char* result) {
-    if (!n) {
-        result[0] = '0';
-        return;
-    }
+char* intToString(int n) {
+    static char ret[32];
+    int numChars = 0;
 
-    if (n == INT_MIN) {
-        char intMinString[] = "-2147483648";
-        memcpy(result, intMinString, strlen(intMinString));
-
-        return;
-    }
-
-    int digits = 0;
-    int stopAt = 0;
-
-    if (n >> 31) {
-        n = ~n + 1;
-        for (int temp = n; temp != 0; temp /= 10, digits++) {
-        }
-
-        result[0] = '-';
-        digits++;
-
-        stopAt = 1;
-
-    } else {
-        for (int temp = n; temp != 0; temp /= 10, digits++) {
-        }
-    }
-
-    for (int i = digits - 1, temp = n; i >= stopAt; i--) {
-        result[i] = (temp % 10) + '0';
+    int temp = n;
+    do {
+        numChars++;
         temp /= 10;
-    }
+    } while (temp);
+
+    ret[numChars] = 0;
+
+    int i = numChars - 1;
+    do {
+        ret[i--] = n % 10 + '0';
+        n /= 10;
+    } while (n);
+    return ret;
 }
 
-void intToHex(int n, char* result) {
-    if (!n) {
-        result[0] = '0';
-        return;
+char* intToString(u32 n) {
+    static char ret[32];
+    int numChars = 0;
+
+    int temp = n;
+    do {
+        numChars++;
+        temp /= 10;
+    } while (temp);
+
+    ret[numChars] = 0;
+
+    int i = numChars - 1;
+    do {
+        ret[i--] = n % 10 + '0';
+        n /= 10;
+    } while (n);
+    return ret;
+}
+
+char* intToHex(u32 n) {
+    static const char* digits = "0123456789ABCDEF";
+    u32 hexSize = sizeof(u32) << 1;
+    char* rc = new char[hexSize + 1];
+    memset(rc, 0, hexSize + 1);
+
+    for (u32 i = 0, j = (hexSize - 1) * 4; i < hexSize; ++i, j -= 4) {
+        rc[i] = digits[(n >> j) & 0x0f];
     }
 
-    for (int i = 0; n != 0; n = n / 0x10, i++) {
-        u8 rem = n % 0x10;
-
-        if (rem < 10) {
-            result[i] = rem + 48;
-        } else {
-            result[i] = rem + 55;
-        }
-    }
-
-    u32 resultLength = strlen(result);
-    for (u32 i = 0, k = resultLength - 1; i < (resultLength / 2); i++, k--) {
-        int temp = result[k];
-        result[k] = result[i];
-        result[i] = temp;
-    }
+    return rc;
 }

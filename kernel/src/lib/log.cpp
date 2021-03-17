@@ -6,9 +6,6 @@
 #include <cstdarg>
 #include <lib/string.hpp>
 
-#define INT32_MAX_DIGITS 12
-#define INT32_MAX_HEX_DIGITS 8
-
 static void print(const char* data, u32 length) {
     for (u32 i = 0; i < length; i++) {
         Terminal::instance->putChar(data[i]);
@@ -38,16 +35,14 @@ int log(int level, const char* __restrict format, ...) {
             Terminal::instance->setColor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
             print("] ", 2);
             break;
+        default:
+            break;
     }
 
     va_list parameters;
     va_start(parameters, format);
 
-    int written = 0;
-
     while (*format != '\0') {
-        u32 maxrem = INT_MAX - written;
-
         if (format[0] != '%' || format[1] == '%') {
             if (format[0] == '%') {
                 format++;
@@ -56,12 +51,8 @@ int log(int level, const char* __restrict format, ...) {
             while (format[amount] && format[amount] != '%') {
                 amount++;
             }
-            if (maxrem < amount) {
-                return -1;
-            }
             print(format, amount);
             format += amount;
-            written += amount;
             continue;
         }
 
@@ -70,63 +61,50 @@ int log(int level, const char* __restrict format, ...) {
         if (*format == 'c') {
             format++;
             char c = (char) va_arg(parameters, int);
-            if (!maxrem) {
-                return -1;
-            }
             print(&c, sizeof(c));
-            written++;
         } else if (*format == 's') {
             format++;
             const char* str = va_arg(parameters, const char*);
             u32 len = strlen(str);
-            if (maxrem < len) {
-                return -1;
-            }
             print(str, len);
-            written += len;
         } else if (*format == 'd') {
             format++;
-            int n = va_arg(parameters, int);
-
-            char str[INT32_MAX_DIGITS + 1] = {0};
-            char* str_ptr = str;
-
-            intToString(n, str_ptr);
-            u32 len = strlen(str);
-
-            if (maxrem < len) {
-                return -1;
+            long long n = va_arg(parameters, long long);
+            int numChars = 0;
+            if (n < 0) {
+                n = -n;
+                numChars++;
+                print("-", 1);
             }
 
-            print(str, len);
+            int temp = n;
+            do {
+                numChars++;
+                temp /= 10;
+            } while (temp);
 
-            written += len;
+            print(n > 0 ? intToString((u32) n) : intToString((int) n), numChars);
         } else if (*format == 'x') {
             format++;
-            int n = va_arg(parameters, int);
-
-            char str[INT32_MAX_HEX_DIGITS + 1] = {};
-            char* str_ptr = str;
-
-            intToHex(n, str_ptr);
-            u32 len = strlen(str);
-
-            if (maxrem < len) {
-                return -1;
+            u32 n = va_arg(parameters, u32);
+            int numChars = 0;
+            if (n < 0) {
+                n = -n;
+                numChars++;
+                print("-", 1);
             }
 
-            print(str, len);
+            int temp = n;
+            do {
+                numChars++;
+                temp /= 10;
+            } while (temp);
 
-            written += len;
-
+            print(intToHex(n), numChars);
         } else {
             format = format_begun_at;
             u32 len = strlen(format);
-            if (maxrem < len) {
-                return -1;
-            }
             print(format, len);
-            written += len;
             format += len;
         }
     }
@@ -201,7 +179,7 @@ int printk(const char* __restrict format, ...) {
             char str[INT32_MAX_DIGITS + 1] = {0};
             char* str_ptr = str;
 
-            intToString(n, str_ptr);
+            //            intToString(n, str_ptr);
             u32 len = strlen(str);
 
             if (maxrem < len) {
@@ -218,7 +196,7 @@ int printk(const char* __restrict format, ...) {
             char str[INT32_MAX_HEX_DIGITS + 1] = {};
             char* str_ptr = str;
 
-            intToHex(n, str_ptr);
+            //            intToHex(n, str_ptr);
             u32 len = strlen(str);
 
             if (maxrem < len) {
