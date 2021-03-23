@@ -58,7 +58,7 @@ u32 FATFileSystem::getNextCluster(u32 cluster) {
     u8* fatBuffer = new u8[512];
 
     u32 fatSectorForCurrentCluster = cluster / (512 / sizeof(u32));
-    disk->read28( partitionOffset + bpb.reservedSectors + fatSectorForCurrentCluster, fatBuffer, 512);
+    disk->read28(partitionOffset + bpb.reservedSectors + fatSectorForCurrentCluster, fatBuffer, 512);
 
     u32 fatOffsetInSectorForCurrentCluster = cluster % (512 / sizeof(u32));
     cluster = ((u32*) fatBuffer)[fatOffsetInSectorForCurrentCluster] & 0x0FFFFFFF;
@@ -242,10 +242,55 @@ int FATFileSystem::readFile(char* path, u8* buffer, u32 offset, int size) {
         return -1;
     }
 
+    if (entry->attributes & 0x10) {
+        delete entry;
+        return -1;
+    }
+
     u32 cluster = ((u32) entry->firstClusterLow) | (((u32) entry->firstClusterHigh) << 16);
     size = size == -1 ? entry->size : size;
 
     readClusterChain(cluster, buffer, size);
 
+    delete entry;
     return 0;
+}
+
+bool FATFileSystem::fileExists(char* path) {
+    DirectoryEntryFat* entry = getEntry(path);
+
+    if (entry == nullptr) {
+        return false;
+    }
+
+    bool exists = !(entry->attributes & 0x10);
+
+    delete entry;
+    return exists;
+}
+
+bool FATFileSystem::directoryExists(char* path) {
+    DirectoryEntryFat* entry = getEntry(path);
+
+    if (entry == nullptr) {
+        return false;
+    }
+
+    bool exists = entry->attributes & 0x10;
+
+    delete entry;
+    return exists;
+}
+
+u32 FATFileSystem::getFileSize(char* path) {
+    DirectoryEntryFat* entry = getEntry(path);
+
+    if (entry == nullptr) {
+        return 0;
+    }
+
+    u32 size = entry->size;
+
+    delete entry;
+    return size;
 }

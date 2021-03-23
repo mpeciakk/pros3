@@ -60,6 +60,9 @@ public:
     FATFileSystem(ATA* disk, u32 partitionOffset);
 
     int readFile(char* path, u8* buffer, u32 offset = 0, int size = -1) override;
+    bool fileExists(char *path) override;
+    bool directoryExists(char *path) override;
+    u32 getFileSize(char *path) override;
 
     static char* convertName(const char name[11]);
 

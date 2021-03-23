@@ -83,10 +83,6 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
 
     FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
 
-    // u8* buffer = new u8[6];
-    // fat.readFile("/in/plik2.txt", buffer, 0, -1);
-    // printk("%s\n", buffer);
-
     log(0, "Kernel loaded!");
     printk("Kernel loaded!");
 
