@@ -1,3 +1,6 @@
+#include <driver/ata.hpp>
+#include <filesystem/fat.hpp>
+#include <filesystem/partitiontable.hpp>
 #include <hardware/gdt.hpp>
 #include <hardware/idt.hpp>
 #include <lib/log.hpp>
@@ -30,7 +33,7 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     log(0, "Initializing physical memory manager");
     u64 kernelSize = (u64) &kernelEnd - (u64) &kernelStart;
 
-    printk("Kernel loaded at %d with size of %dKB\n", &kernelStart, kernelSize / 1024);
+    printk("Loading kernel at address %d with size of %dKB\n", (u32) &kernelStart, (u32) kernelSize / 1024);
 
     u32 memorySize = 0;
     multiboot_memory_map_t* memoryMap;
@@ -38,8 +41,8 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     printk("Detected memory:\n");
     for (memoryMap = (multiboot_mmap_entry*) phys2virt(mbi->mmap_addr); (u32) memoryMap < (phys2virt(mbi->mmap_addr) + mbi->mmap_length);
          memoryMap = (multiboot_mmap_entry*) ((u32) memoryMap + memoryMap->size + sizeof(memoryMap->size))) {
-        printk("Address low = 0x%x, address high = 0x%x "
-               "length low = 0x%x, length high = 0x%x, type = 0x%x\n",
+        printk("Address low = %d, address high = %d "
+               "length low = %d, length high = %d, type = %d\n",
                memoryMap->addr_low, memoryMap->addr_high, memoryMap->len_low, memoryMap->len_high, memoryMap->type);
 
         memorySize += memoryMap->len_low | ((u64) memoryMap->len_high) << 32;
@@ -66,6 +69,23 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
 
     MemoryManager memoryManager(KERNEL_HEAP_START, KERNEL_HEAP_START + KERNEL_HEAP_SIZE);
     log(0, "Initialized heap on address 0x%x with size 0x%x", KERNEL_HEAP_START, KERNEL_HEAP_SIZE);
+
+    log(0, "Loading ATA Primary Master");
+    ATA ata0m(0x1F0, true);
+    ata0m.identify();
+
+    log(0, "Loading ATA Primary Slave");
+    ATA ata0s(0x1F0, false);
+    ata0s.identify();
+
+    log(0, "Loading filesystem");
+    MasterBootRecord mbr = PartitionTable::readPartitions(&ata0s);
+
+    FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
+
+    // u8* buffer = new u8[6];
+    // fat.readFile("/in/plik2.txt", buffer, 0, -1);
+    // printk("%s\n", buffer);
 
     log(0, "Kernel loaded!");
     printk("Kernel loaded!");

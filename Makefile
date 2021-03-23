@@ -7,9 +7,9 @@ DISK_IMG = pros.img
 MOUNT_POINT = /mnt/pros
 
 QEMU = qemu-system-i386
-QEMU_IMG = qemu-img.exe
+QEMU_IMG = qemu-img
 
-QEMU_FLAGS = -monitor stdio -m 128
+QEMU_FLAGS = -serial stdio -m 128
 
 BOCHS = "/mnt/d/Program Files/Bochs-2.6.11/bochsdbg.exe"
 BOCHS_FLAGS =
@@ -59,29 +59,29 @@ iso: kernel
 	echo '  multiboot /boot/pros.bin'    	 >> iso/boot/grub/grub.cfg
 	echo '  boot'                            >> iso/boot/grub/grub.cfg
 	echo '}'                                 >> iso/boot/grub/grub.cfg
-	grub-mkrescue --output=$(BUILD_DIR)/pros.iso iso
+	grub-mkrescue -v --output=$(BUILD_DIR)/pros.iso iso
 	rm -rf iso
 
 mount:
-	sudo losetup -o 32256 /dev/loop0 $(DISK_IMG)
-	sudo mount -t vfat /dev/loop0 $(MOUNT_POINT) -o rw,uid=1000,gid=1000
+	#sudo losetup -o 1048576 /dev/loop0 $(DISK_IMG)
+	sudo mount -t vfat $(DISK_IMG) $(MOUNT_POINT) -o loop,rw,uid=1000,gid=1000
 
 umount:
 	@if mountpoint -q $(MOUNT_POINT); then\
 		sync $(MOUNT_POINT);\
         sudo umount $(MOUNT_POINT);\
-        sudo losetup -d /dev/loop0;\
+		#sudo losetup -d /dev/loop0;\
 	fi
 
 disk:
-	$(QEMU_IMG) create $(DISK_IMG) 128M
-	mkfs.fat -F32 $(DISK_IMG)
+	$(QEMU_IMG) create $(DISK_IMG) 32M
+	mkfs.vfat -F32 $(DISK_IMG)
 
 run: clean kernel umount
-	$(QEMU) $(QEMU_FLAGS) -drive format=raw,file=$(DISK_IMG) -kernel $(BUILD_DIR)/pros.bin
+	$(QEMU) $(QEMU_FLAGS) -kernel $(BUILD_DIR)/pros.bin -drive file=$(DISK_IMG)
 
 runiso: clean umount iso
-	$(QEMU) $(QEMU_FLAGS) $(BUILD_DIR)/pros.iso -serial stdio -drive file=$(DISK_IMG),format=raw
+	$(QEMU) $(QEMU_FLAGS) $(BUILD_DIR)/pros.iso -drive file=$(DISK_IMG)
 
 bochs: clean $(TARGET) iso umount
 	$(BOCHS) -q -f bochsrc.txt

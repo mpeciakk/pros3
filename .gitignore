@@ -3,5 +3,6 @@
 iso
 build
 pros.img
+pros.vdi
 cmake-build-debug
 kmap.map

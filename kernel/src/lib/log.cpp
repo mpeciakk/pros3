@@ -12,7 +12,79 @@ static void print(const char* data, u32 length) {
     }
 }
 
-int log(int level, const char* __restrict format, ...) {
+void printf(const char* __restrict format, ...) {
+    va_list parameters;
+    va_start(parameters, format);
+
+    while (*format != '\0') {
+        if (format[0] != '%' || format[1] == '%') {
+            if (format[0] == '%') {
+                format++;
+            }
+            u32 amount = 1;
+            while (format[amount] && format[amount] != '%') {
+                amount++;
+            }
+            print(format, amount);
+            format += amount;
+            continue;
+        }
+
+        const char* format_begun_at = format++;
+
+        if (*format == 'c') {
+            format++;
+            char c = (char) va_arg(parameters, int);
+            print(&c, sizeof(c));
+        } else if (*format == 's') {
+            format++;
+            const char* str = va_arg(parameters, const char*);
+            u32 len = strlen(str);
+            print(str, len);
+        } else if (*format == 'd') {
+            format++;
+            long long n = va_arg(parameters, long long);
+            printk("%d", (u32) n);
+            int numChars = 0;
+            if (n < 0) {
+                n = -n;
+                numChars++;
+                print("-", 1);
+            }
+
+            int temp = n;
+            do {
+                numChars++;
+                temp /= 10;
+            } while (temp);
+
+            print(n > 0 ? intToString((u32) n) : intToString((int) n), numChars);
+        } else if (*format == 'x') {
+            format++;
+            long long n = va_arg(parameters, long long);
+            int numChars = 0;
+            if (n < 0) {
+                n = -n;
+                numChars++;
+                print("-", 1);
+            }
+
+            printk("\n\n%s\n\n", intToHex(n));
+
+            char* s = intToHex(n);
+            print(s, strlen(s));
+        } else {
+            format = format_begun_at;
+            u32 len = strlen(format);
+            print(format, len);
+            format += len;
+        }
+    }
+
+    va_end(parameters);
+}
+
+void log(int level, const char* __restrict format, ...) {
     switch (level) {
         case 0:
             print("[", 1);
@@ -69,13 +141,14 @@ int log(int level, const char* __restrict format, ...) {
             print(str, len);
         } else if (*format == 'd') {
             format++;
-            long long n = va_arg(parameters, long long);
+            // TODO: find another way to recognise if parameter is signed or unsigned
+            u32 n = va_arg(parameters, u32);
             int numChars = 0;
-            if (n < 0) {
-                n = -n;
-                numChars++;
-                print("-", 1);
-            }
+            //            if (n < 0) {
+            //                n = -n;
+            //                numChars++;
+            //                print("-", 1);
+            //            }
 
             int temp = n;
             do {
@@ -83,16 +156,16 @@ int log(int level, const char* __restrict format, ...) {
                 temp /= 10;
             } while (temp);
 
-            print(n > 0 ? intToString((u32) n) : intToString((int) n), numChars);
+            print(intToString((u32) n), numChars);
         } else if (*format == 'x') {
             format++;
             u32 n = va_arg(parameters, u32);
             int numChars = 0;
-            if (n < 0) {
-                n = -n;
-                numChars++;
-                print("-", 1);
-            }
+            //            if (n < 0) {
+            //                n = -n;
+            //                numChars++;
+            //                print("-", 1);
+            //            }
 
             int temp = n;
             do {
@@ -112,8 +185,6 @@ int log(int level, const char* __restrict format, ...) {
     va_end(parameters);
 
     Terminal::instance->putChar('\n');
-
-    return 0;
 }
 
 static bool rawPrintk(const char* data, u32 length) {
@@ -174,39 +245,41 @@ int printk(const char* __restrict format, ...) {
             written += len;
         } else if (*format == 'd') {
             format++;
-            int n = va_arg(parameters, int);
+            // TODO: find another way to recognise if parameter is signed or unsigned
+            u32 n = va_arg(parameters, u32);
+            int numChars = 0;
+            //            if (n < 0) {
+            //                n = -n;
+            //                numChars++;
+            //                rawPrintk("-", 1);
+            //            }
 
-            char str[INT32_MAX_DIGITS + 1] = {0};
-            char* str_ptr = str;
+            int temp = n;
+            do {
+                numChars++;
+                temp /= 10;
+            } while (temp);
 
-            //            intToString(n, str_ptr);
-            u32 len = strlen(str);
-
-            if (maxrem < len) {
-                return -1;
-            }
-
-            rawPrintk(str, len);
-
-            written += len;
+            rawPrintk(intToString((u32) n), numChars);
         } else if (*format == 'x') {
+            // TODO: this may cause page fault when heap is not initialized
+
             format++;
-            int n = va_arg(parameters, int);
+            u32 n = va_arg(parameters, u32);
+            int numChars = 0;
+            //            if (n < 0) {
+            //                n = -n;
+            //                numChars++;
+            //                rawPrintk("-", 1);
+            //            }
 
-            char str[INT32_MAX_HEX_DIGITS + 1] = {};
-            char* str_ptr = str;
+            int temp = n;
+            do {
+                numChars++;
+                temp /= 10;
+            } while (temp);
 
-            //            intToHex(n, str_ptr);
-            u32 len = strlen(str);
-
-            if (maxrem < len) {
-                return -1;
-            }
-
-            rawPrintk(str, len);
-
-            written += len;
-
+            rawPrintk(intToHex(n), numChars);
         } else {
             format = format_begun_at;
             u32 len = strlen(format);
@@ -222,4 +295,23 @@ int printk(const char* __restrict format, ...) {
     va_end(parameters);
 
     return written;
+}
+
+void hexdump(void* ptr, int buflen) {
+    u8* buf = (u8*) ptr;
+    int i;
+    int j;
+    for (i = 0; i < buflen; i += 16) {
+        printk("%x: ", i);
+
+        for (j = 0; j < 16; j++) {
+            if (i + j < buflen) {
+                printk("%x ", buf[i + j]);
+            } else {
+                printk("   ");
+            }
+        }
+
+        printk("\n");
+    }
 }
