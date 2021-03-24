@@ -9,7 +9,7 @@ Thread* ThreadManager::createFromFunction(void (*entryPoint)(), bool isKernel, u
     Thread* thread = new Thread();
 
     thread->parent = parent;
-    thread->stack = (u8*) MemoryManager::instance->alignedMalloc(THREAD_STACK_SIZE);
+    thread->stack = (u8*) MemoryManager::instance->alignedMalloc(THREAD_STACK_SIZE, THREAD_STACK_SIZE);
     thread->userStack = parent == nullptr ? (u8*) USER_STACK : (u8*) (USER_STACK - USER_STACK_SIZE * parent->threads.size());
     thread->userStackSize = USER_STACK_SIZE;
     thread->regs = (CPUState*) ((u32) thread->stack + THREAD_STACK_SIZE - sizeof(CPUState));
