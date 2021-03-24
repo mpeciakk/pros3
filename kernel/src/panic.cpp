@@ -1,17 +1,15 @@
 #include <panic.hpp>
-#include <terminal.hpp>
+#include <lib/log.hpp>
 
 void panic(char* message, char* file, int line, TrapFrame* frame) {
-    Terminal::instance->write("--------------------bruh moment--------------------\n");
-    Terminal::instance->write("kernel just commited bruh moment\n");
-    Terminal::instance->write("why? cause ");
-    Terminal::instance->write(message);
-    Terminal::instance->write("\n");
+    printf("--------------------bruh moment--------------------\n");
+    printf("kernel just committed bruh moment\n");
+    printf("why? cause %s\n", message);
 
     if (file) {
-        Terminal::instance->write("where? in ");
-        Terminal::instance->write(file);
-        Terminal::instance->write("\n");
+        printf("where? in ");
+        printf(file);
+        printf("\n");
     }
 
     while (true) {}

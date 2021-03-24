@@ -7,7 +7,6 @@ extern "C" void* bootPageDirectory;
 
 VirtualMemoryManager::VirtualMemoryManager() {
     instance = this;
-
     currentDirectory = nullptr;
 
     PageDirectory* directory = (PageDirectory*) &bootPageDirectory;
@@ -15,19 +14,19 @@ VirtualMemoryManager::VirtualMemoryManager() {
     memset(&pde, 0, sizeof(PageDirectoryEntry));
     pde.present = 1;
     pde.readWrite = 1;
+    pde.pageSize = 0;
     pde.frame = virt2phys((u32) &bootPageDirectory) / PAGE_SIZE;
     directory->entries[1023] = pde;
-
-    PageDirectoryEntry* entry = &directory->entries[0];
-    entry->present = 1;
-    entry->readWrite = 1;
-    entry->isUser = 1;
-    entry->pageSize = 1;
-    entry->frame = 0;
 
     for (u32 i = KERNEL_HEAP_START; i < KERNEL_HEAP_START + KERNEL_HEAP_SIZE; i += PAGE_SIZE) {
         allocPage(getPageForAddress(i, true), true, true);
     }
+
+    directory->entries[0].present = 1;
+    directory->entries[0].readWrite = 1;
+    directory->entries[0].isUser = 1;
+    directory->entries[0].pageSize = 1;
+    directory->entries[0].frame = 0;
 
     reloadCR3();
 }

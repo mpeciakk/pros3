@@ -7,11 +7,17 @@
 #include <memory/heap.hpp>
 #include <memory/pmm.hpp>
 #include <multiboot.hpp>
+#include <process/process.hpp>
+#include <process/scheduler.hpp>
 #include <terminal.hpp>
 #include <types.hpp>
 
 extern "C" u32* kernelStart;
 extern "C" u32* kernelEnd;
+
+void idle() {
+    printf("idle\n");
+}
 
 extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     Terminal terminal;
@@ -70,21 +76,36 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     MemoryManager memoryManager(KERNEL_HEAP_START, KERNEL_HEAP_START + KERNEL_HEAP_SIZE);
     log(0, "Initialized heap on address 0x%x with size 0x%x", KERNEL_HEAP_START, KERNEL_HEAP_SIZE);
 
-    log(0, "Loading ATA Primary Master");
-    ATA ata0m(0x1F0, true);
-    ata0m.identify();
+    log(0, "Loading process manager");
+    ProcessManager processManager;
 
-    log(0, "Loading ATA Primary Slave");
-    ATA ata0s(0x1F0, false);
-    ata0s.identify();
+    log(0, "Loading thread manager");
+    ThreadManager threadManager;
 
-    log(0, "Loading filesystem");
-    MasterBootRecord mbr = PartitionTable::readPartitions(&ata0s);
+    log(0, "Loading process sheduler");
+    ProcessScheduler processScheduler;
 
-    FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
+    log(0, "Loading kernel process");
+    Process* kernelProcess = processManager.createKernelProcess();
+    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle, true));
+//    kernelProcess->threads[0]->parent = kernelProcess;
+    processScheduler.addThread(kernelProcess->threads[0]);
+
+//    log(0, "Loading ATA Primary Master");
+//    ATA ata0m(0x1F0, true);
+//    ata0m.identify();
+//
+//    log(0, "Loading ATA Primary Slave");
+//    ATA ata0s(0x1F0, false);
+//    ata0s.identify();
+//
+//    log(0, "Loading filesystem");
+//    MasterBootRecord mbr = PartitionTable::readPartitions(&ata0s);
+//
+//    FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
 
     log(0, "Kernel loaded!");
-    printk("Kernel loaded!");
+    printk("Kernel loaded!\n");
 
     while (true) {
     }

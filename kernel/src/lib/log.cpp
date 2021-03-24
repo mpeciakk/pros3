@@ -44,7 +44,6 @@ void printf(const char* __restrict format, ...) {
         } else if (*format == 'd') {
             format++;
             long long n = va_arg(parameters, long long);
-            printk("%d", (u32) n);
             int numChars = 0;
             if (n < 0) {
                 n = -n;
@@ -68,8 +67,6 @@ void printf(const char* __restrict format, ...) {
                 numChars++;
                 print("-", 1);
             }
-
-            printk("\n\n%s\n\n", intToHex(n));
 
             char* s = intToHex(n);
             print(s, strlen(s));

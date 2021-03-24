@@ -9,7 +9,7 @@ MOUNT_POINT = /mnt/pros
 QEMU = qemu-system-i386
 QEMU_IMG = qemu-img
 
-QEMU_FLAGS = -serial stdio -m 128
+QEMU_FLAGS = -serial stdio -m 32
 
 BOCHS = "/mnt/d/Program Files/Bochs-2.6.11/bochsdbg.exe"
 BOCHS_FLAGS =
