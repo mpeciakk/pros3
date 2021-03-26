@@ -13,7 +13,7 @@
 
 #define PAGE_SIZE 4096
 
-#define virt2phys(x) ((u32)(x) - (u32) 3 * 1024 * 1024 * 1024)
+#define virt2phys(x) ((u32) (x) - (u32) 3 * 1024 * 1024 * 1024)
 
 #define KERNEL_VIRT_ADDR (u32) 3 * 1024 * 1024 * 1024
 #define USER_STACK_SIZE 32 * 1024

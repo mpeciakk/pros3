@@ -19,6 +19,14 @@ void idle() {
     printf("idle\n");
 }
 
+void idle2() {
+    printf("idle2\n");
+}
+
+void idle3() {
+    printf("idle3\n");
+}
+
 extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     Terminal terminal;
     terminal.clear();
@@ -88,8 +96,12 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
     log(0, "Loading kernel process");
     Process* kernelProcess = processManager.createKernelProcess();
     kernelProcess->threads.pushBack(threadManager.createFromFunction(idle, true));
+//    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle2, true));
+//    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle3, true));
 //    kernelProcess->threads[0]->parent = kernelProcess;
     processScheduler.addThread(kernelProcess->threads[0]);
+//    processScheduler.addThread(kernelProcess->threads[1]);
+//    processScheduler.addThread(kernelProcess->threads[2]);
 
 //    log(0, "Loading ATA Primary Master");
 //    ATA ata0m(0x1F0, true);

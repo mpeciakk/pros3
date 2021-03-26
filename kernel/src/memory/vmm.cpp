@@ -63,7 +63,7 @@ void VirtualMemoryManager::freePage(PageTableEntry* pte) {
 
 PageTableEntry* VirtualMemoryManager::getPageForAddress(u32 address, bool shouldCreate, bool write, bool user) {
     u32 pageDirIndex = PAGEDIR_INDEX(address);
-    u32 pageTableIndex = PAGE_TABLE_INDEX(address);
+    u32 pageTableIndex = PAGETBL_INDEX(address);
 
     PageDirectory* pageDir = (PageDirectory*) PAGE_DIRECTORY_ADDRESS;
     if (pageDir->entries[pageDirIndex].present == 0 && shouldCreate) {

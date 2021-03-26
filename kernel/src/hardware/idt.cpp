@@ -1,4 +1,5 @@
 #include <hardware/idt.hpp>
+#include <lib/log.hpp>
 #include <panic.hpp>
 
 char* exceptions[] = {"Division by zero",

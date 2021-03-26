@@ -61,6 +61,13 @@ handleInterrupt 0x31
 handleInterrupt 0x80
 
 int_bottom:
+    # Save Registers
+    pusha
+	pushl %ds
+	pushl %es
+	pushl %fs
+	pushl %gs
+
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -84,7 +91,14 @@ int_bottom:
     popl %edi
     popl %ebp
 
-    add $4, %esp
+    popl %gs
+	popl %fs
+	popl %es
+	popl %ds
+	popa
+
+	add $8, %esp
+
 
 .global _ZN16InterruptManager15ignoreInterruptEv
 _ZN16InterruptManager15ignoreInterruptEv:
