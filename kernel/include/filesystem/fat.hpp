@@ -3,6 +3,7 @@
 
 #include <filesystem/virtualfilesystem.hpp>
 #include <lib/linkedlist.hpp>
+#include <lib/singleton.hpp>
 #include <types.hpp>
 
 #define CLUSTER_FREE 0x00
@@ -55,7 +56,7 @@ struct DirectoryEntryFat {
     u32 size;
 } __attribute__((packed));
 
-class FATFileSystem : public VirtualFileSystem {
+class FATFileSystem : public VirtualFileSystem, public Singleton<FATFileSystem> {
 public:
     FATFileSystem(ATA* disk, u32 partitionOffset);
 
@@ -65,6 +66,7 @@ public:
     u32 getFileSize(char *path) override;
 
     static char* convertName(const char name[11]);
+    Vector<DirectoryEntryFat*>* getEntries(char* path);
 
 private:
     BiosParameterBlock bpb;
@@ -77,7 +79,6 @@ private:
     u32 getNextCluster(u32 cluster);
 
     Vector<DirectoryEntryFat*>* getEntries(u32 cluster);
-    Vector<DirectoryEntryFat*>* getEntries(char* path);
     DirectoryEntryFat* getEntryInCluster(char* name, u32 cluster);
     DirectoryEntryFat* getEntry(char* path);
     void readClusterChain(u32 firstCluster, u8* buffer, int fileSize);

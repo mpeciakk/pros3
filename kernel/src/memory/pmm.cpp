@@ -137,3 +137,11 @@ bool PhysicalMemoryManager::test(int bit) {
 u32 PhysicalMemoryManager::freeBlocksCount() {
     return maxBlocks - usedBlocks;
 }
+
+u32 pageRoundUp(u32 address) {
+    if ((address & 0xFFFFF000) != address) {
+        address &= 0xFFFFF000;
+        address += 0x1000;
+    }
+    return address;
+}

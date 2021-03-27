@@ -38,4 +38,6 @@ private:
     bool test(int bit);
 };
 
+u32 pageRoundUp(u32 address);
+
 #endif

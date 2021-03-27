@@ -2,6 +2,7 @@
 #define __THREAD_HPP
 
 #include <process/process.hpp>
+#include <lib/singleton.hpp>
 
 #define THREAD_STACK_SIZE 4 * 1024
 
@@ -10,6 +11,8 @@
 #define SEG_KERNEL_DATA 0x10
 #define SEG_KERNEL_CODE 8
 
+enum ThreadState { Blocked, Ready, Stopped, Started };
+
 class Process;
 
 struct CPUState {
@@ -17,30 +20,30 @@ struct CPUState {
     u32 ebx;
     u32 ecx;
     u32 edx;
-    u32 esi;
-    u32 edi;
-    u32 ebp;
-    u32 gs;
-    u32 fs;
-    u32 es;
-    u32 ds;
 
-    u32 eip;
-    u32 cs;
+    u32 esi; // stack index
+    u32 edi; // data index
+    u32 ebp; // base pointer
+
+    u32 error;
+
+    u32 eip; // instruction pointer
+    u32 cs;  // code segment
     u32 eflags;
-    u32 esp;
-    u32 ss;
+    u32 esp; // stack pointer
+    u32 ss;  // stack segment
 } __attribute__((packed));
 
 struct Thread {
     Process* parent;
+    CPUState* registers;
     u8* stack;
     u8* userStack;
     u32 userStackSize;
-    CPUState* regs;
+    ThreadState state;
 };
 
-class ThreadManager : Singleton<ThreadManager> {
+class ThreadManager : public Singleton<ThreadManager> {
 public:
     ThreadManager();
 

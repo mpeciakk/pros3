@@ -7,8 +7,8 @@
 #include <memory/heap.hpp>
 #include <memory/pmm.hpp>
 #include <multiboot.hpp>
-#include <process/process.hpp>
 #include <process/scheduler.hpp>
+#include <process/thread.hpp>
 #include <terminal.hpp>
 #include <types.hpp>
 
@@ -16,15 +16,15 @@ extern "C" u32* kernelStart;
 extern "C" u32* kernelEnd;
 
 void idle() {
-    printf("idle\n");
+    while (true) {
+        printf("a");
+    }
 }
 
 void idle2() {
-    printf("idle2\n");
-}
-
-void idle3() {
-    printf("idle3\n");
+    while (true) {
+        printf("b");
+    }
 }
 
 extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
@@ -95,29 +95,48 @@ extern "C" [[noreturn]] void kmain(multiboot_info* mbi, u32 multibootMagic) {
 
     log(0, "Loading kernel process");
     Process* kernelProcess = processManager.createKernelProcess();
-    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle, true));
+//    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle, true));
 //    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle2, true));
-//    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle3, true));
+    //    kernelProcess->threads.pushBack(threadManager.createFromFunction(idle3, true));
 //    kernelProcess->threads[0]->parent = kernelProcess;
-    processScheduler.addThread(kernelProcess->threads[0]);
+//    kernelProcess->threads[1]->parent = kernelProcess;
+//    processScheduler.addThread(kernelProcess->threads[0]);
 //    processScheduler.addThread(kernelProcess->threads[1]);
-//    processScheduler.addThread(kernelProcess->threads[2]);
+    //    processScheduler.addThread(kernelProcess->threads[2]);
 
-//    log(0, "Loading ATA Primary Master");
-//    ATA ata0m(0x1F0, true);
-//    ata0m.identify();
-//
-//    log(0, "Loading ATA Primary Slave");
-//    ATA ata0s(0x1F0, false);
-//    ata0s.identify();
-//
-//    log(0, "Loading filesystem");
-//    MasterBootRecord mbr = PartitionTable::readPartitions(&ata0s);
-//
-//    FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
+    log(0, "Loading ATA Primary Master");
+    ATA ata0m(0x1F0, true);
+    ata0m.identify();
+
+    log(0, "Loading ATA Primary Slave");
+    ATA ata0s(0x1F0, false);
+    ata0s.identify();
+
+    log(0, "Loading filesystem");
+    MasterBootRecord mbr = PartitionTable::readPartitions(&ata0s);
+
+    FATFileSystem fat(&ata0s, mbr.primaryPartition[0].startLba);
 
     log(0, "Kernel loaded!");
     printk("Kernel loaded!\n");
+
+//    u32 size = fat.getFileSize("/init.out");
+
+//    u8* buffer = new u8[size];
+
+//    log(0, "Buffer created!");
+
+//    fat.readFile("/init.out", buffer);
+
+//    log(0, "tak");
+
+    Process* process = processManager.createProcess("/init.out", true);
+
+//    if (process != nullptr) {
+//        log(0, "Launching init process");
+
+//        processScheduler.addThread(process->threads[0]);
+//    }
 
     while (true) {
     }

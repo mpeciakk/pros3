@@ -2,6 +2,8 @@
 #include <lib/log.hpp>
 
 FATFileSystem::FATFileSystem(ATA* disk, u32 partitionOffset) {
+    instance = this;
+
     this->disk = disk;
     this->partitionOffset = partitionOffset;
 
@@ -212,24 +214,23 @@ void FATFileSystem::readClusterChain(u32 firstCluster, u8* buffer, int fileSize)
     u8* copyBuffer = buffer;
     u8 tempBuffer[512];
 
-    u32 nextFileCluster = firstCluster;
-    while (fileSize > 0) {
-        u32 fileSector = dataStart + bpb.sectorsPerCluster * (nextFileCluster - 2);
+    u32 bytesRead;
 
-        int sectorOffset = 0;
-        for (; fileSize > 0; fileSize -= 512) {
-            disk->read28(fileSector + sectorOffset, tempBuffer, fileSize < 512 ? fileSize : 512);
+    u32 cluster = firstCluster;
+    while ((cluster != CLUSTER_FREE) && (cluster < CLUSTER_END)) {
+        u32 fileSector = dataStart + bpb.sectorsPerCluster * (cluster - 2);
+
+        for (int i = 0; i < bpb.sectorsPerCluster; i++) {
+            disk->read28(fileSector + i, tempBuffer, fileSize < 512 ? fileSize : 512);
 
             memcpy(copyBuffer, tempBuffer, fileSize < 512 ? fileSize : 512);
 
-            copyBuffer += 512;
+            copyBuffer += fileSize < 512 ? fileSize : 512;
 
-            if (++sectorOffset > bpb.sectorsPerCluster) {
-                break;
-            }
+            fileSize -= fileSize < 512 ? fileSize : bpb.bytesPerSector;
         }
 
-        nextFileCluster = getNextCluster(nextFileCluster);
+        cluster = getNextCluster(cluster);
     }
 
     copyBuffer[fileSize] = '\0';

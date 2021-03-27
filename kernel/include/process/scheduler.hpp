@@ -1,11 +1,13 @@
 #ifndef __SCHEDULER_HPP
 #define __SCHEDULER_HPP
 
-#include <process/thread.hpp>
 #include <hardware/idt.hpp>
-#include <lib/singleton.hpp>
+#include <lib/vector.hpp>
+#include <process/thread.hpp>
 
-class ProcessScheduler : public Singleton<ProcessScheduler>, public InterruptHandler {
+#define SCHEDULER_FREQUENCY 30
+
+class ProcessScheduler : public InterruptHandler {
 public:
     ProcessScheduler();
 
@@ -13,12 +15,16 @@ public:
 
 private:
     Vector<Thread*> threads;
+
     Thread* currentThread = nullptr;
-    u32 currentThreadNumber = 0;
+    int currentThreadNumber = -1;
+
+    u32 frequency;
+    u32 tickCount;
 
     u32 handle(u32 esp) override;
 
-    Thread* getNextReadyThread();
+    Thread* getNextReadyThread(CPUState* state);
 };
 
 #endif

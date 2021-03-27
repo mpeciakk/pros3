@@ -130,7 +130,7 @@ void VirtualMemoryManager::mapPage(void* physicalAddress, void* virtualAddress) 
 
 void* VirtualMemoryManager::virtualToPhysical(void* address) {
     u32 pageDirOffset = PAGEDIR_INDEX(address);
-    u32 pageTableOffset = PAGE_TABLE_INDEX((u32) address);
+    u32 pageTableOffset = PAGETBL_INDEX((u32) address);
     u32 pageOffset = PAGEFRAME_INDEX(address);
 
     PageTable* pageTable = (PageTable*) (PAGE_TABLE_ADDRESS + (PAGE_SIZE * pageDirOffset));

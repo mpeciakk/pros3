@@ -71,6 +71,25 @@ public:
         dataPtr = tmpPtr;
     }
 
+    void remove(int index, int count) {
+        if (index > m_size) {
+            return;
+        }
+
+        if (count <= 0) {
+            return;
+        }
+
+        T* tmpPtr = new T[m_size - count];
+
+        memcpy(tmpPtr, dataPtr, index * sizeof(T));
+        memcpy(tmpPtr + index, dataPtr + index + count, sizeof(T) * (m_size - index - count));
+
+        delete[] dataPtr;
+        dataPtr = tmpPtr;
+        m_size -= count;
+    }
+
     inline T& operator[](int index) {
         return dataPtr[index];
     }
