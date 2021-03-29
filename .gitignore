@@ -1,8 +1,12 @@
 .idea
 .git
 iso
-build
 pros.img
 pros.vdi
-cmake-build-debug
 kmap.map
+log.txt
+cmake-build-debug
+Build
+Toolchain/Build
+Toolchain/i686
+Toolchain/Tarballs
